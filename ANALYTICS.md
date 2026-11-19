@@ -1,23 +1,43 @@
-# GA4 — configuration du portfolio
+# Google Analytics 4 — portfolio
 
-L'ancien thème utilisait Google tag (gtag.js), mais la valeur `googleAnalyticsID` dans son `config.yaml` était vide. Aucun identifiant de mesure existant n'a donc pu être migré.
+## Ce que contenait l'ancien site
 
-## Mise en place
+L'ancien thème utilisait Google tag (gtag.js) dans le fichier `themes/raditian-free-hugo-theme-data-science/layouts/partials/head.html`. Il chargeait `gtag.js`, initialisait `dataLayer`, puis exécutait `gtag('config', ...)`.
 
-1. Créer ou choisir une propriété Google Analytics 4 pour le site.
-2. Créer un flux Web pour le domaine final.
-3. Copier l'identifiant de mesure au format `G-XXXXXXXXXX`.
-4. Dans `dist/index.html`, remplacer `G-XXXXXXXXXX` par cet identifiant uniquement dans les deux emplacements prévus du bloc Google tag.
-5. Publier le dossier `dist` avec Netlify.
+L'identifiant était injecté depuis `googleAnalyticsID` dans `config.yaml`. Or cette valeur était vide dans l'ancien dépôt : aucun identifiant GA4 actif n'a donc pu être extrait ou migré.
 
-Le bloc GA4 est chargé avec `send_page_view: false`. Le fichier `dist/script.js` envoie ensuite une seule vue de page initiale, et des événements personnalisés pour les interactions des projets, le téléchargement du CV, l'ouverture des contacts et les liens sortants.
+## Configuration du nouveau site
 
-## Confidentialité et consentement
+Le nouveau site charge `dist/analytics.js` depuis `dist/index.html`. Pour activer la collecte :
 
-Le tag respecte le Consent Mode avec un état initial refusé pour `analytics_storage`. Le site ne charge pas le tag Analytics tant que l'utilisateur n'a pas accepté les cookies analytiques via le bandeau de consentement. Le choix est enregistré localement pour éviter de redemander à chaque navigation. Le lien « Gérer les cookies » permet de rouvrir le choix.
+1. Ouvre Google Analytics et sélectionne la propriété GA4 du portfolio, ou crée-en une.
+2. Dans **Administration → Flux de données → Web**, récupère l'identifiant de mesure au format `G-XXXXXXXXXX`.
+3. Ouvre `dist/analytics.js` et remplace la constante `GA_MEASUREMENT_ID = "G-XXXXXXXXXX"` par ton vrai identifiant.
+4. Publie le dépôt sur Netlify. Le dossier de publication est déjà configuré sur `dist` dans `netlify.toml`.
 
-Cette intégration technique ne remplace pas la vérification juridique du bandeau, de la politique de confidentialité et des règles applicables aux traceurs sur le site publié.
+Tant que le marqueur `G-XXXXXXXXXX` n'est pas remplacé, aucun appel réseau vers Google Analytics n'est effectué et aucune statistique ne remonte.
+
+## Événements suivis
+
+Après acceptation des statistiques, le site envoie :
+- `page_view` : affichage de la page ;
+- `project_open` : clic dans une carte projet ;
+- `cv_download` : téléchargement du CV ;
+- `contact_click` : clic sur l'e-mail ou le téléphone ;
+- `outbound_click` : clic sur un lien externe.
+
+Le chargement Google est différé jusqu'à l'acceptation. Le consentement est refusé par défaut pour `analytics_storage`, `ad_storage`, `ad_user_data` et `ad_personalization`. Le choix du visiteur est conservé localement et peut être modifié via **Gérer les cookies** en bas de page. Aucun événement Analytics n'est envoyé tant que le consentement n'est pas accordé.
+
+## Vérification
+
+Après avoir renseigné l'identifiant et publié :
+1. Ouvre le portfolio en navigation privée.
+2. Refuse les statistiques : aucun tag Google Analytics ne doit être chargé.
+3. Recharge, accepte les statistiques, puis consulte le rapport **Temps réel** de GA4.
+4. Clique sur une carte projet, le CV et les coordonnées pour vérifier les événements.
+
+La configuration du consentement doit être testée sur le domaine réellement publié. Cette implémentation technique ne remplace pas la validation de la politique de confidentialité ni l'analyse des obligations applicables aux traceurs.
 
 ## Tableau de bord privé
 
-Cette configuration GA4 ne crée pas une page d'administration. Les rapports doivent être consultés dans Google Analytics. Une page /admin privée nécessiterait une authentification et un accès serveur aux données GA4 via l'API Data, avec secrets conservés côté serveur — jamais dans le JavaScript public.
+La page `/admin` n'est pas incluse dans cette modification. Les rapports sont disponibles dans Google Analytics. Un tableau de bord maison nécessitera une authentification et un backend sécurisé utilisant l'API Google Analytics Data ; aucun secret de service ne devra être placé dans les fichiers JavaScript publics.
