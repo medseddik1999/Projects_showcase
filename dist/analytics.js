@@ -3,7 +3,7 @@
 
   // Remplacez cette valeur par l'identifiant de mesure GA4 (format : G-XXXXXXXXXX).
   // L'ancien dépôt ne contenait aucun identifiant actif : googleAnalyticsID était vide.
-  const GA_MEASUREMENT_ID = "G-XXXXXXXXXX";
+  const GA_MEASUREMENT_ID = "G-P9N8NSE7PL";
   const CONSENT_STORAGE_KEY = "portfolio_analytics_consent";
   const hasValidMeasurementId =
     /^G-[A-Z0-9]{6,}$/.test(GA_MEASUREMENT_ID) &&
